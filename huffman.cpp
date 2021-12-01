@@ -1,17 +1,21 @@
 #include<bits/stdc++.h>
 using namespace std;
-typedef long long ll;
+#define ll long long
+
 char str[1000];
-set<char>character;//to get distinct characters.
 map<char,ll>frequency;
+set<char>character;
 map<char,string>encode;
+
 struct node{
           char ch;
           ll freq;
           struct node *left,*right;
 };
+
 struct node *pq[1000];
-struct node* new_node(char a,ll f,struct node *left_child,struct node *right_child)//creating new node
+
+struct node* new_node(ll f, char a, struct node *left_child,struct node *right_child)
 {
           struct node *temp=(struct node*)malloc(sizeof(struct node));
           temp->ch=a;
@@ -21,28 +25,27 @@ struct node* new_node(char a,ll f,struct node *left_child,struct node *right_chi
           return temp;
 }
 
-void encoding(struct node *temp,string strg)
+void encoding(string s, struct node *t)
 {
-          if(temp->left==NULL&&temp->right==NULL)
+          if(t->left==NULL&&t->right==NULL)
           {
-                    encode[temp->ch]=strg;
-                   // decode[strg]=temp->ch;
-                    cout<<temp->ch<<":"<<strg<<endl;
+                    encode[t->ch]=s;
+                    cout<<t->ch<<":"<<s<<endl;
                     return;
           }
-          encoding(temp->left,strg+"0");
-          encoding(temp->right,strg+"1");
+          encoding(t->left,s+"0");
+          encoding(t->right,s+"1");
 }
 
-void decoding(string prefix_code,struct node *root)
+void decoding(string prefix,struct node *root)
 {
           ll i;
           struct node *n=(struct node*)malloc(sizeof(struct node));
           n=root;
-          for(i=0;prefix_code[i]!='\0';i++)
+          for(i=0;prefix[i]!='\0';i++)
           {
-                    if(prefix_code[i]=='1'&&n->right!=NULL)n=n->right;
-                    else if(prefix_code[i]=='0'&&n->left!=NULL)n=n->left;
+                    if(prefix[i]=='1'&&n->right!=NULL)n=n->right;
+                    else if(prefix[i]=='0'&&n->left!=NULL)n=n->left;
                     if(n->ch!='\0'){
                               cout<<n->ch;
                               n=root;
@@ -50,7 +53,7 @@ void decoding(string prefix_code,struct node *root)
           }
 }
 
-void min_heapify(ll n,ll root)
+void minHeapify(ll root, ll n)
 {
           ll l=root*2+1,r=root*2+2,minimum=root;
           if(l<n&&pq[minimum]->freq>pq[l]->freq)minimum=l;
@@ -62,41 +65,41 @@ void min_heapify(ll n,ll root)
           }
 }
 
-void insert_heap(ll len)
+void insertHeap(ll d)
 {
-          while(len)
+          while(d)
           {
-                    ll parent=(len-1)/2;
-                    if(pq[parent]->freq>pq[len]->freq){
-                              swap(pq[parent],pq[len]);
-                              len=parent;
+                    ll p=(d-1)/2;
+                    if(pq[p]->freq>pq[d]->freq){
+                              swap(pq[p],pq[d]);
+                              d=p;
                     }
                     else return;
           }
 }
 
-void huffman_code()
+void huffman()
 {
-          set<char>::iterator it;
+          set<char>::iterator itt;
           ll i=0,n=character.size();
-          for(it=character.begin();it!=character.end();it++)
+          for(itt=character.begin();itt!=character.end();itt++)
           {
-                    pq[i]=new_node(*it,frequency[*it],NULL,NULL);
+                    pq[i]=new_node(*itt,frequency[*itt],NULL,NULL);
                     i++;
           }
           for(ll k=i/2-1;k>=0;k--)
-                    min_heapify(i,k);
+                    minHeapify(i,k);
           while(n>1)
           {
                     struct node *left_child=(struct node*)malloc(sizeof(struct node)),*right_child=(struct node*)malloc(sizeof(struct node));
-                    left_child=pq[0];//inserting the least minimum node as left child in huffman tree
-                    swap(pq[0],pq[n-1]);n--;//deleting the minimum node to get next minimum node
-                    min_heapify(n,0);//after deleting the minimum node if we min heapify the array we will get the next minimum node
-                    right_child=pq[0];//inserting the next minimum node as right child in huffman tree
+                    left_child=pq[0];
+                    swap(pq[0],pq[n-1]);n--;
+                    minHeapify(n,0);
+                    right_child=pq[0];
                     swap(pq[0],pq[n-1]);
-                    min_heapify(n-1,0);//after swapping the last node with the root node we are operating min heapify  on the array excluding the last node as we will insert the parent of left and right child rather deleting the last node.
-                    pq[n-1]=new_node('\0',left_child->freq+right_child->freq,left_child,right_child);//creating the parent
-                    insert_heap(n-1);// inserting the parent in the min heap
+                    minHeapify(n-1,0);
+                    pq[n-1]=new_node('\0',left_child->freq+right_child->freq,left_child,right_child);
+                    insertHeap(n-1);
           }
           struct node *root=NULL;
           root=pq[0];
@@ -115,17 +118,17 @@ void huffman_code()
 }
 int main()
 {
-          FILE *file;
-          file=fopen("Message.txt","r");
-          char a;
-          ll i=0;
-          while((a=fgetc(file))!=EOF)
+          FILE *f;
+          f=fopen("Message.txt","r");
+          char c;
+          ll k=0;
+          while((c=fgetc(f))!=EOF)
           {
-                    str[i]=a;
-                    frequency[a]++;
-                    character.insert(a);
-                    i++;
+                    str[k]=c;
+                    frequency[c]++;
+                    character.insert(c);
+                    k++;
           }
-          huffman_code();
+          huffman();
           cout<<"\nActual message is:\n"<<str<<endl;
 }
